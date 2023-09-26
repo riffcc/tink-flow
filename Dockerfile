@@ -7,6 +7,8 @@ ARG KUBECTL_VERSION=1.17.5
 ARG KUSTOMIZE_VERSION=v3.8.1
 ARG HELMFILE_VERSION=v0.157.0
 
+ENV KUBECONFIG=/kubeconfig
+
 # Install helm (latest release)
 RUN case `uname -m` in \
     x86_64) ARCH=amd64; ;; \
@@ -69,7 +71,10 @@ RUN pip3 install --upgrade pip && \
 RUN rm -rf /var/cache/apk/*
 
 # Install the application itself
-COPY build.py entrypoint.py helmfile.yaml charts/ /app/
+COPY build.py entrypoint.py helmfile.yaml /app/
+
+# Install the charts
+ADD charts/ /app/charts
 
 WORKDIR /app
 
