@@ -5,8 +5,7 @@ FROM alpine
 ARG HELM_VERSION=3.2.1
 ARG KUBECTL_VERSION=1.17.5
 ARG KUSTOMIZE_VERSION=v3.8.1
-ARG KUBESEAL_VERSION=0.18.1
-ARG KREW_VERSION=v0.4.4
+ARG HELMFILE_VERSION=v0.157.0
 
 # Install helm (latest release)
 RUN case `uname -m` in \
@@ -36,6 +35,15 @@ RUN . /envfile && echo $ARCH && \
     mv kubectl /usr/bin/kubectl && \
     chmod +x /usr/bin/kubectl
 
+# Install helmfile (latest release)
+RUN . /envfile && echo $ARCH && \
+    mkdir -p /tmp/helmfile && \
+    curl -sLO https://github.com/helmfile/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz && \
+    tar xvzf helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz -C /tmp/helmfile && \
+    mv /tmp/helmfile/helmfile /usr/bin/helmfile && \
+    chmod +x /usr/bin/helmfile && \
+    rm -r /tmp/helmfile helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz
+
 # Install kustomize (latest release)
 RUN . /envfile && echo $ARCH && \
     curl -sLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz && \
@@ -52,6 +60,9 @@ RUN apk add --update --no-cache gettext
 
 # Install Python3
 RUN apk add --no-cache python3 py3-pip
+
+# Clean up
+RUN rm -rf /var/cache/apk/*
 
 COPY . /app/
 
