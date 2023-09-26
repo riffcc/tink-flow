@@ -1,0 +1,144 @@
+{{- /* Helper function - Splits the bootDisk string to get the actual device name */ -}}
+{{- define "getDeviceName" }}
+  {{- $bootDiskSplit := splitList "/" . }}
+  {{- $renderedBootDisk := last $bootDiskSplit }}
+  {{- $renderedBootDisk }}
+{{- end }}
+
+{{- /* Initialize global dictionary */ -}}
+{{- $globalDefaults := .Values.globalDefaults | default dict }}
+
+{{- /* Iterate over each machine in the list */ -}}
+{{- range $machine := .Values.machines }}
+  {{- /* Merge machine-specific values with globalDefaults */ -}}
+  {{- $machine := merge $machine $globalDefaults }}
+
+  {{- /* Use the helper function to get the device name from bootDisk */ -}}
+  {{- $renderedBootDisk := include "getDeviceName" $machine.bootDisk }}
+
+  {{- /* Check if the machine uses the default boot disk ("sda") */ -}}
+  {{- $usesDefaultBootDisk := eq $renderedBootDisk "sda" }}
+  
+  {{- /* Initialize the template name with "debian12" as default */ -}}
+  {{- $templateName := "debian12" }}
+  
+  {{- /* If a non-default boot disk is used, append the disk name to the template name (e.g., "debian12-sdb") */ -}}
+  {{- if not $usesDefaultBootDisk }}
+    {{- $templateName = printf "debian12-%s" $renderedBootDisk }}
+  {{- end }}
+---
+apiVersion: "tinkerbell.org/v1alpha1"
+kind: Template
+metadata:
+  name: {{ $templateName }}
+  namespace: tink-system
+spec:
+  data: |
+    version: "0.1"
+    name: {{ $templateName }}
+    global_timeout: 1800
+    tasks:
+      - name: "os-installation"
+        worker: "{{.device_1}}"
+        volumes:
+          - /dev:/dev
+          - /dev/console:/dev/console
+          - /lib/firmware:/lib/firmware:ro
+        actions:
+          - name: "stream-debian-image"
+            image: quay.io/tinkerbell-actions/image2disk:v1.0.0
+            timeout: 600
+            environment:
+              DEST_DISK: {{ $machine.bootDisk }}
+              # Hegel IP
+              IMG_URL: "http://10.1.1.151:80/images/debian-12-amd64.raw.gz"
+              COMPRESSED: true
+          - name: "grow-partition"
+            image: quay.io/tinkerbell-actions/cexec:v1.0.0
+            timeout: 90
+            environment:
+              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              FS_TYPE: ext4
+              CHROOT: y
+              CMD_LINE: "growpart {{ $machine.bootDisk }} 1"
+          - name: "resize2fs"
+            image: quay.io/tinkerbell-actions/cexec:v1.0.0
+            timeout: 90
+            environment:
+              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              FS_TYPE: ext4
+              CHROOT: y
+              CMD_LINE: "resize2fs {{ $machine.bootDisk }}1"
+          - name: "add-tink-cloud-init-config"
+            image: quay.io/tinkerbell-actions/writefile:v1.0.0
+            timeout: 90
+            environment:
+              DEST_DISK: {{ $machine.bootDisk }}1
+              FS_TYPE: ext4
+              DEST_PATH: /etc/cloud/cloud.cfg.d/10_tinkerbell.cfg
+              UID: 0
+              GID: 0
+              MODE: 0600
+              DIRMODE: 0700
+              CONTENTS: |
+                datasource_list: [Ec2]
+                datasource:
+                  Ec2:
+                    # Hegel IP
+                    metadata_urls: ["http://10.1.1.24:50061"]
+                    strict_id: false
+                    apply_full_imds_network_config: false
+                    max_wait: 30
+                    timeout: 10
+                system_info:
+                  default_user:
+                    name: riff
+                    groups: [wheel, adm, sudo]
+                    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+                    shell: /bin/bash
+                package_upgrade: true
+                packages:
+                  - htop
+                  - git
+                  - qemu-guest-agent
+                users:
+                - name: riff
+                  sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+                  shell: /bin/bash
+                  ssh_authorized_keys:
+                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXcIkcYMXYY4CFHJv7O6946HDJrh+w4IqFExRSTt7oN wings@trevor"
+                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6vPhGaO6fVdmS6IhAb+A+MXlkAsBN2BeIVJQaD7Vqf wings@chase"
+                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO584u1bj3QIb2kHH5651233CKFwOqlG6fDD6T0YanjU pcadmin@stellar"
+                warnings:
+                  dsid_missing_source: off
+                runcmd:
+                  - [ systemctl, start, qemu-guest-agent ]
+          - name: "add-tink-cloud-init-ds-config"
+            image: quay.io/tinkerbell-actions/writefile:v1.0.0
+            timeout: 90
+            environment:
+              DEST_DISK: {{ $machine.bootDisk }}1
+              FS_TYPE: ext4
+              DEST_PATH: /etc/cloud/ds-identify.cfg
+              UID: 0
+              GID: 0
+              MODE: 0600
+              DIRMODE: 0700
+              CONTENTS: |
+                datasource: Ec2
+          - name: "force-dhcp-mac-identifier"
+            image: quay.io/tinkerbell-actions/cexec:v1.0.0
+            timeout: 90
+            environment:
+              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              FS_TYPE: ext4
+              CHROOT: y
+              DEFAULT_INTERPRETER: "/bin/sh -c"
+              CMD_LINE: >
+                awk 'BEGIN { found=0 } (!/^#/) && /^send dhcp-client-identifier/ { print "send dhcp-client-identifier \"\""; found=1; next } 1; END { if (found==0) print "send dhcp-client-identifier \"\"" }' /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.conf.new && mv /etc/dhcp/dhclient.conf.new /etc/dhcp/dhclient.conf
+          - name: "reboot"
+            image: public.ecr.aws/l0g8r8j6/tinkerbell/hub/reboot-action:latest
+            timeout: 90
+            volumes:
+            - /worker:/worker
+{{- end }}

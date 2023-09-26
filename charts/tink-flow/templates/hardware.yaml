@@ -1,0 +1,46 @@
+{{- $globalDefaults := .Values.globalDefaults | default dict }}
+{{- $defaults := .Values.defaults | default dict }}
+
+{{- range $machine := .Values.machines }}
+  {{- $machine := merge (merge $machine $defaults) $globalDefaults }}
+---
+apiVersion: "tinkerbell.org/v1alpha1"
+kind: Hardware
+metadata:
+  name: {{ $machine.hostname }}
+  namespace: tink-system
+spec:
+  disks:
+    - device: {{ $machine.bootDisk }}
+  metadata:
+    facility:
+      facility_code: {{ $machine.facility.code }}
+    manufacturer:
+      slug: {{ $machine.manufacturer.slug }}
+    instance:
+      userdata: ""
+      hostname: "{{ $machine.hostname }}"
+      id: "{{ $machine.macAddress | lower }}"
+      operating_system:
+        distro: "{{ $machine.os.distro }}"
+        os_slug: "{{ $machine.os.os_slug }}"
+        version: "{{ $machine.os.version }}"
+  interfaces:
+    - dhcp:
+        arch: {{ $machine.architecture }}
+        hostname: {{ $machine.hostname }}
+        ip:
+          address: {{ $machine.ipAddress }}
+          gateway: {{ $machine.gateway }}
+          netmask: {{ $machine.netmask }}
+        lease_time: 86400
+        mac: {{ $machine.macAddress | lower }}
+        name_servers:
+        {{- range $machine.nameServers }}
+          - {{ . | quote }}
+        {{- end }}
+        uefi: true
+      netboot:
+        allowPXE: true
+        allowWorkflow: true
+{{- end }}

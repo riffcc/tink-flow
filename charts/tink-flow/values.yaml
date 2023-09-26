@@ -1,0 +1,31 @@
+# Default values for Tinkermatic.
+# You'll want to set these to make sense for your specific environment.
+# Ideally, they should be the most common values you encounter.
+# This way, when you deploy a new machine, you only have to define what's "strange" about it.
+
+globalDefaults:
+  # The root boot device used for the OS.
+  bootDisk: /dev/sda
+
+  # Which OS to deploy by default
+  os:
+    distro: debian
+    os_slug: debian_12
+    version: 12
+
+  # Default machine architecture
+  architecture: x86_64
+
+  # Network settings for your main environment
+  gateway: 10.1.1.1
+  netmask: 255.255.0.0
+
+  # DNS settings for your main environment
+  nameServers:
+    - "10.1.1.53"
+
+  # Information about your physical environment and machine types
+  facility:
+    code: "onprem"
+  manufacturer:
+    slug: "proxmox"

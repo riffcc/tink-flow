@@ -1,0 +1,6 @@
+releases:
+  - name: tink-flow-release
+    namespace: tink-system
+    chart: ./charts/tink-flow
+    values:
+      - values.yaml

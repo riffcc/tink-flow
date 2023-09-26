@@ -61,10 +61,15 @@ RUN apk add --update --no-cache gettext
 # Install Python3
 RUN apk add --no-cache python3 py3-pip
 
+# Use pip3 to install necessary libraries
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir pyyaml
+
 # Clean up
 RUN rm -rf /var/cache/apk/*
 
-COPY . /app/
+# Install the application itself
+COPY build.py entrypoint.py helmfile.yaml charts/ /app/
 
 WORKDIR /app
 
