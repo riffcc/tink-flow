@@ -1,0 +1,13 @@
+{{- range $machine := .Values.machines }}
+---
+apiVersion: "tinkerbell.org/v1alpha1"
+kind: Workflow
+metadata:
+  name: {{ $machine.hostname }}
+  namespace: tink-system
+spec:
+  templateRef: debian12
+  hardwareRef: {{ $machine.hostname }}
+  hardwareMap:
+    device_1: {{ $machine.macAddress | lower }}
+{{- end }}
