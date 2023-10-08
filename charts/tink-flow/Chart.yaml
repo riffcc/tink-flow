@@ -1,7 +1,7 @@
 apiVersion: v2
-name: tinkermatic
+name: tink-flow
 description: A Helm chart to manage a fleet of machines using Tinkerbell
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "1.0"
-home: https://github.com/riffcc/tinkermatic
+home: https://github.com/riffcc/tink-flow
