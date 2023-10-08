@@ -1,3 +1,5 @@
+{{- $processedBootDisks := list }}
+
 {{- /* Helper function - Splits the bootDisk string to get the actual device name */ -}}
 {{- define "getDeviceName" }}
   {{- $bootDiskSplit := splitList "/" . }}
@@ -15,6 +17,10 @@
 
   {{- /* Use the helper function to get the device name from bootDisk */ -}}
   {{- $renderedBootDisk := include "getDeviceName" $machine.bootDisk }}
+
+  {{- if not (has $renderedBootDisk $processedBootDisks) }}
+    {{- /* Append boot disk to the processed list */ -}}
+    {{- $processedBootDisks = append $processedBootDisks $renderedBootDisk }}
 
   {{- /* Check if the machine uses the default boot disk ("sda") */ -}}
   {{- $usesDefaultBootDisk := eq $renderedBootDisk "sda" }}
@@ -141,4 +147,5 @@ spec:
             timeout: 90
             volumes:
             - /worker:/worker
+{{- end }}
 {{- end }}
