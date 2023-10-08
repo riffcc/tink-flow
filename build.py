@@ -29,6 +29,7 @@ def main():
 
     for file in files:
         file_path = os.path.join(folder_path, file)
+        print(f"Building machine definitions from {file}")
         yaml_data = read_yaml(file_path)
 
         if yaml_data is None:

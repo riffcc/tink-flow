@@ -4,7 +4,7 @@ import sys
 
 def run_build_script():
     try:
-        result = subprocess.check_output(['python', 'build.py'])
+        result = subprocess.check_output(['python3', 'build.py'])
         return result.decode()
     except subprocess.CalledProcessError as e:
         print(f"Error running build.py: {e}")
@@ -30,14 +30,13 @@ def main():
         print(f"No valid YAML files found in {folder_path}")
         return
 
-    yaml_output = run_build_script()
-    if yaml_output is None:
-        return
-    
+    run_build = run_build_script()
+    print(run_build)
+    sys.stdout.flush()
+
     values_file_path = os.path.join(os.getcwd(), 'values.yaml')
-    with open(values_file_path, 'w') as f:
-        f.write(yaml_output)
     print(f"Generated values.yaml at {values_file_path}")
+    sys.stdout.flush()
 
     payload = ['helmfile']
 
