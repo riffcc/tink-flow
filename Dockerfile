@@ -2,9 +2,9 @@ FROM alpine
 
 # Don't update versions directly here, use --build-arg to pass in the versions.
 # docker build --no-cache --build-arg KUBECTL_VERSION=${tag} --build-arg HELM_VERSION=${helm} --build-arg KUSTOMIZE_VERSION=${kustomize_version} -t ${image}:${tag} .
-ARG HELM_VERSION=3.2.1
-ARG KUBECTL_VERSION=1.17.5
-ARG KUSTOMIZE_VERSION=v3.8.1
+ARG HELM_VERSION=3.12.3
+ARG KUBECTL_VERSION=0.28.2
+ARG KUSTOMIZE_VERSION=v5.1.1
 ARG HELMFILE_VERSION=v0.157.0
 
 ENV KUBECONFIG=/kubeconfig
