@@ -37,6 +37,14 @@
   {{- if not $usesDefaultBootDisk }}
     {{- $templateName = printf "debian12-%s" $renderedBootDisk }}
   {{- end }}
+
+  {{- /* Initialize partition prefix based on whether renderedBootDisk starts with "nvme" */ -}}
+  {{- $partitionPrefix := "" }}
+  {{- if hasPrefix "nvme" $renderedBootDisk }}
+    {{- $partitionPrefix = "p" }}
+  {{- else }}
+    {{- $partitionPrefix = "" }}
+  {{- end }}
 ---
 apiVersion: "tinkerbell.org/v1alpha1"
 kind: Template
@@ -68,7 +76,7 @@ spec:
             image: quay.io/tinkerbell-actions/cexec:v1.0.0
             timeout: 90
             environment:
-              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              BLOCK_DEVICE: {{ $machine.bootDisk }}{{ $partitionPrefix }}1
               FS_TYPE: ext4
               CHROOT: y
               CMD_LINE: "growpart {{ $machine.bootDisk }} 1"
@@ -76,15 +84,15 @@ spec:
             image: quay.io/tinkerbell-actions/cexec:v1.0.0
             timeout: 90
             environment:
-              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              BLOCK_DEVICE: {{ $machine.bootDisk }}{{ $partitionPrefix }}1
               FS_TYPE: ext4
               CHROOT: y
-              CMD_LINE: "resize2fs {{ $machine.bootDisk }}1"
+              CMD_LINE: "resize2fs {{ $machine.bootDisk }}{{ $partitionPrefix }}1"
           - name: "add-tink-cloud-init-config"
             image: quay.io/tinkerbell-actions/writefile:v1.0.0
             timeout: 90
             environment:
-              DEST_DISK: {{ $machine.bootDisk }}1
+              DEST_DISK: {{ $machine.bootDisk }}{{ $partitionPrefix }}1
               FS_TYPE: ext4
               DEST_PATH: /etc/cloud/cloud.cfg.d/10_tinkerbell.cfg
               UID: 0
