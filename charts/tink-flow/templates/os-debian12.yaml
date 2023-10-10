@@ -1,15 +1,20 @@
-{{- $processedBootDisks := list }}
+{{- $globalDefaults := .Values.globalDefaults | default dict }}
+{{- $defaults := .Values.defaults | default dict }}
 
+# Initialise an empty list of processed boot disks
+{{- $processedBootDisks := list }}
+# Add helper function
 {{- /* Helper function - Splits the bootDisk string to get the actual device name */ -}}
 {{- define "getDeviceName" }}
   {{- $bootDiskSplit := splitList "/" . }}
   {{- $renderedBootDisk := last $bootDiskSplit }}
   {{- $renderedBootDisk }}
 {{- end }}
-
+# Get values from globalDefaults and load them into a dict
 {{- /* Initialize global dictionary */ -}}
 {{- $globalDefaults := .Values.globalDefaults | default dict }}
 
+# For each machine in the list of machines,
 {{- /* Iterate over each machine in the list */ -}}
 {{- range $machine := .Values.machines }}
   {{- /* Merge machine-specific values with globalDefaults */ -}}

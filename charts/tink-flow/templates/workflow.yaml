@@ -1,4 +1,39 @@
+# Initialise an empty list of processed boot disks
+{{- $processedBootDisks := list }}
+# Add helper function
+{{- /* Helper function - Splits the bootDisk string to get the actual device name */ -}}
+{{- define "getDeviceName" }}
+  {{- $bootDiskSplit := splitList "/" . }}
+  {{- $renderedBootDisk := last $bootDiskSplit }}
+  {{- $renderedBootDisk }}
+{{- end }}
+# Get values from globalDefaults and load them into a dict
+{{- /* Initialize global dictionary */ -}}
+{{- $globalDefaults := .Values.globalDefaults | default dict }}
+
+# For each machine in the list of machines
+{{- /* Iterate over each machine in the list */ -}}
 {{- range $machine := .Values.machines }}
+  {{- /* Merge machine-specific values with globalDefaults */ -}}
+  {{- $machine := merge $machine $globalDefaults }}
+
+  {{- /* Use the helper function to get the device name from bootDisk */ -}}
+  {{- $renderedBootDisk := include "getDeviceName" $machine.bootDisk }}
+
+  {{- if not (has $renderedBootDisk $processedBootDisks) }}
+    {{- /* Append boot disk to the processed list */ -}}
+    {{- $processedBootDisks = append $processedBootDisks $renderedBootDisk }}
+
+  {{- /* Check if the machine uses the default boot disk ("sda") */ -}}
+  {{- $usesDefaultBootDisk := eq $renderedBootDisk "sda" }}
+  
+  {{- /* Initialize the template name with "debian12" as default */ -}}
+  {{- $templateName := "debian12" }}
+  
+  {{- /* If a non-default boot disk is used, append the disk name to the template name (e.g., "debian12-sdb") */ -}}
+  {{- if not $usesDefaultBootDisk }}
+    {{- $templateName = printf "debian12-%s" $renderedBootDisk }}
+  {{- end }}
 ---
 apiVersion: "tinkerbell.org/v1alpha1"
 kind: Workflow
@@ -10,4 +45,6 @@ spec:
   hardwareRef: {{ $machine.hostname }}
   hardwareMap:
     device_1: {{ $machine.macAddress | lower }}
+
+{{- end }}
 {{- end }}

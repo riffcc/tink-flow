@@ -44,6 +44,8 @@ def main():
         payload.append('apply')
     elif sys.argv[1] in ['template', 'dryrun']:
         payload.append('template')
+    elif sys.argv[1] in ['debug']:
+        payload.extend(['apply', '--debug'])
     elif sys.argv[1] == '--interactive':
         payload.extend(['apply', '--interactive'])
     elif sys.argv[1] in ['help', '--help']:
