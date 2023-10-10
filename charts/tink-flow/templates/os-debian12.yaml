@@ -45,7 +45,7 @@ spec:
     global_timeout: 1800
     tasks:
       - name: "os-installation"
-        worker: "{{.device_1}}"
+        worker: "{{"{{.device_1}}"}}"
         volumes:
           - /dev:/dev
           - /dev/console:/dev/console
