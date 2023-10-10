@@ -109,7 +109,7 @@ spec:
                   - qemu-guest-agent
                 users:
                 - name: riff
-                  sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+                  sudo: "ALL=(ALL) NOPASSWD:ALL"
                   shell: /bin/bash
                   ssh_authorized_keys:
                     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXcIkcYMXYY4CFHJv7O6946HDJrh+w4IqFExRSTt7oN wings@trevor"
