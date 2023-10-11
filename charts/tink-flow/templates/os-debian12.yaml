@@ -154,7 +154,7 @@ spec:
               CHROOT: y
               DEFAULT_INTERPRETER: "/bin/sh -c"
               CMD_LINE: >
-                awk 'BEGIN { found=0 } (!/^#/) && /^send dhcp-client-identifier/ { print "send dhcp-client-identifier = hardware"; found=1; next } 1; END { if (found==0) print "send dhcp-client-identifier = hardware" }' /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.conf.new && mv /etc/dhcp/dhclient.conf.new /etc/dhcp/dhclient.conf
+                awk 'BEGIN { found=0 } (!/^#/) && /^send dhcp-client-identifier/ { print "send dhcp-client-identifier = hardware;"; found=1; next } 1; END { if (found==0) print "send dhcp-client-identifier = hardware;" }' /etc/dhcp/dhclient.conf > /etc/dhcp/dhclient.conf.new && mv /etc/dhcp/dhclient.conf.new /etc/dhcp/dhclient.conf
           - name: "reboot"
             image: public.ecr.aws/l0g8r8j6/tinkerbell/hub/reboot-action:latest
             timeout: 90
