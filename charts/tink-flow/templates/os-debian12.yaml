@@ -120,6 +120,17 @@ spec:
                   - htop
                   - git
                   - qemu-guest-agent
+                network:
+                  version: 2
+                  ethernets:
+                    anynameyouwant:
+                      match:
+                        macaddress: "{{"{{ Hardware.Network.Interfaces[0].Dhcp.Mac }}"}}"
+                      dhcp4: yes
+                      routes:
+                      - to: 0.0.0.0/0
+                        via: 10.1.1.1
+                        metric: 50
                 users:
                 - name: riff
                   sudo: "ALL=(ALL) NOPASSWD:ALL"
@@ -136,7 +147,7 @@ spec:
             image: quay.io/tinkerbell-actions/writefile:v1.0.0
             timeout: 90
             environment:
-              DEST_DISK: {{ $machine.bootDisk }}1
+              DEST_DISK: {{ $machine.bootDisk }}{{ $partitionPrefix }}1
               FS_TYPE: ext4
               DEST_PATH: /etc/cloud/ds-identify.cfg
               UID: 0
@@ -149,7 +160,7 @@ spec:
             image: quay.io/tinkerbell-actions/cexec:v1.0.0
             timeout: 90
             environment:
-              BLOCK_DEVICE: {{ $machine.bootDisk }}1
+              BLOCK_DEVICE: {{ $machine.bootDisk }}{{ $partitionPrefix }}1
               FS_TYPE: ext4
               CHROOT: y
               DEFAULT_INTERPRETER: "/bin/sh -c"
