@@ -120,17 +120,6 @@ spec:
                   - htop
                   - git
                   - qemu-guest-agent
-                network:
-                  version: 2
-                  ethernets:
-                    anynameyouwant:
-                      match:
-                        macaddress: "{{"{{ Hardware.Network.Interfaces[0].Dhcp.Mac }}"}}"
-                      dhcp4: yes
-                      routes:
-                      - to: 0.0.0.0/0
-                        via: 10.1.1.1
-                        metric: 50
                 users:
                 - name: riff
                   sudo: "ALL=(ALL) NOPASSWD:ALL"
