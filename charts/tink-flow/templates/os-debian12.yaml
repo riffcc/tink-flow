@@ -127,7 +127,8 @@ spec:
                   ssh_authorized_keys:
                     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXcIkcYMXYY4CFHJv7O6946HDJrh+w4IqFExRSTt7oN wings@trevor"
                     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6vPhGaO6fVdmS6IhAb+A+MXlkAsBN2BeIVJQaD7Vqf wings@chase"
-                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO584u1bj3QIb2kHH5651233CKFwOqlG6fDD6T0YanjU pcadmin@stellar"
+                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBEIgcSX7O9JXe5Y74p1CF31F2yNkh/jl7CMXADo50Dv wings@jeff"
+                    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2E4KqA3O9AgfB0FnDcNcsm/S+EjIWf+Bw7SBESZMsx wings@blackberry"
                 warnings:
                   dsid_missing_source: off
                 runcmd:
