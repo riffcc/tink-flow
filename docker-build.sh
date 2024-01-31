@@ -26,6 +26,11 @@ build() {
   kustomize_version=$(basename ${kustomize_release})
   echo "kustomize version is $kustomize_version"
 
+  # helmfile version
+  helmfile_version=$(curl -s https://api.github.com/repos/helmfile/helmfile/releases | jq -r '.[].tag_name | select([startswith("v"), (contains("-rc") | not)] | all)' \
+    | sort -rV | head -n 1)
+  echo "helmfile version is $helmfile_version"
+
   docker build --no-cache \
     --build-arg KUBECTL_VERSION=${tag} \
     --build-arg HELM_VERSION=${helm} \
@@ -45,19 +50,6 @@ build() {
     exit
   fi
 
-# Not using CircleCI (yet?)
-#   if [[ "$CIRCLE_BRANCH" == "master" ]]; then
-#     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-#     docker buildx create --use
-#     docker buildx build --no-cache --push \
-#       --platform=linux/amd64,linux/arm64 \
-#       --build-arg KUBECTL_VERSION=${tag} \
-#       --build-arg HELM_VERSION=${helm} \
-#       --build-arg KUSTOMIZE_VERSION=${kustomize_version} \
-#       --build-arg KUBESEAL_VERSION=${kubeseal_version} \
-#       --build-arg KREW_VERSION=${krew_version} \
-#       -t ${image}:${tag} .
-#   fi
 }
 
 image="zorlin/tink-flow"

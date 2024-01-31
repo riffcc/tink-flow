@@ -5,7 +5,7 @@ FROM alpine
 ARG HELM_VERSION=3.12.3
 ARG KUBECTL_VERSION=0.28.2
 ARG KUSTOMIZE_VERSION=v5.1.1
-ARG HELMFILE_VERSION=v0.157.0
+ARG HELMFILE_VERSION=v0.161.0
 
 ENV KUBECONFIG=/kubeconfig
 
@@ -40,6 +40,7 @@ RUN . /envfile && echo $ARCH && \
 # Install helmfile (latest release)
 RUN . /envfile && echo $ARCH && \
     mkdir -p /tmp/helmfile && \
+    echo https://github.com/helmfile/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz && \
     curl -sLO https://github.com/helmfile/helmfile/releases/download/${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz && \
     tar xvzf helmfile_${HELMFILE_VERSION#v}_linux_${ARCH}.tar.gz -C /tmp/helmfile && \
     mv /tmp/helmfile/helmfile /usr/bin/helmfile && \
@@ -64,8 +65,8 @@ RUN apk add --update --no-cache gettext
 RUN apk add --no-cache python3 py3-pip
 
 # Use pip3 to install necessary libraries
-RUN pip3 install --upgrade pip && \
-    pip3 install --no-cache-dir pyyaml
+RUN pip3 install --break-system-packages --upgrade pip && \
+    pip3 install --break-system-packages --no-cache-dir pyyaml
 
 # Clean up
 RUN rm -rf /var/cache/apk/*
